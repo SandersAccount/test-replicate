@@ -3,298 +3,426 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Profile</title>
+    <title>Profile Settings - AI Image Generator</title>
     <link rel="stylesheet" href="/styles.css">
     <style>
         .profile-container {
             max-width: 800px;
-            margin: 40px auto;
+            margin: 80px auto 0;
             padding: 0 20px;
         }
 
         .profile-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 2rem;
         }
 
-        .profile-avatar {
-            width: 100px;
-            height: 100px;
-            background-color: #8e44ad;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 2.5em;
-            font-weight: bold;
-            margin-right: 20px;
-        }
-
-        .profile-title h1 {
-            margin: 0;
-            color: #333;
-        }
-
-        .profile-title p {
-            margin: 5px 0;
-            color: #666;
-        }
-
-        .profile-card {
-            background: white;
-            border-radius: 8px;
-            padding: 30px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-
-        .profile-section {
-            margin-bottom: 20px;
-        }
-
-        .profile-section h2 {
-            color: #333;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #f0f0f0;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #555;
-            font-weight: bold;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-
-        .btn {
-            background: #8e44ad;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
-        }
-
-        .btn:hover {
-            background: #732d91;
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .stat-card {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        .stat-number {
+        .profile-header h1 {
             font-size: 24px;
-            font-weight: bold;
-            color: #8e44ad;
-            margin-bottom: 5px;
+            margin: 0;
+            color: #fff;
         }
 
-        .stat-label {
+        .profile-header p {
             color: #666;
+            margin: 4px 0 0;
+        }
+
+        .profile-tabs {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #333;
+        }
+
+        .profile-tab {
+            padding: 8px 0;
+            color: #666;
+            cursor: pointer;
+            position: relative;
+            background: none;
+            border: none;
             font-size: 14px;
         }
 
-        #message {
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
+        .profile-tab.active {
+            color: #fff;
+        }
+
+        .profile-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #ff1cf7;
+        }
+
+        .tab-content {
             display: none;
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 24px;
         }
 
-        .success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+        .tab-content.active {
+            display: block;
         }
 
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+        .field-group {
+            margin-bottom: 24px;
+        }
+
+        .field-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .field-value {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .field-text {
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .edit-button {
+            padding: 6px 12px;
+            background: #333;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .edit-button:hover {
+            background: #444;
+        }
+
+        .subscription-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            background: #1a472e;
+            color: #4caf50;
+        }
+
+        .subscription-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+        }
+
+        .credits-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .credits-count {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .credits-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .credits-warning {
+            background: #332b00;
+            border: 1px solid #665500;
+            padding: 16px;
+            border-radius: 4px;
+            margin: 24px 0;
+            color: #ffb300;
+        }
+
+        .credits-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 24px;
+        }
+
+        .credits-table th {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #333;
+            color: #666;
+            font-weight: normal;
+        }
+
+        .credits-table td {
+            padding: 12px;
+            border-bottom: 1px solid #333;
+            color: #fff;
+        }
+
+        .primary-button {
+            background: #ff1cf7;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .secondary-button {
+            background: #333;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
     <div id="topbar"></div>
-    
+
     <div class="profile-container">
-        <div id="message"></div>
-        
         <div class="profile-header">
-            <div class="profile-avatar" id="profileAvatar"></div>
-            <div class="profile-title">
-                <h1 id="profileName">Loading...</h1>
-                <p id="profileEmail"></p>
+            <h1>Profile Settings</h1>
+            <p>Manage your personal information</p>
+        </div>
+
+        <div class="profile-tabs">
+            <button class="profile-tab active" data-tab="personal">Personal Info</button>
+            <button class="profile-tab" data-tab="subscription">Subscription</button>
+            <button class="profile-tab" data-tab="credits">Credits</button>
+        </div>
+
+        <!-- Personal Info Tab -->
+        <div id="personal" class="tab-content active">
+            <div class="field-group">
+                <div class="field-label">Nickname</div>
+                <div class="field-value">
+                    <span id="nickname" class="field-text"></span>
+                    <button class="edit-button" onclick="editField('nickname')">Edit</button>
+                </div>
+            </div>
+
+            <div class="field-group">
+                <div class="field-label">Bio</div>
+                <div class="field-value">
+                    <span id="bio" class="field-text">Briefly introduce yourself in this space...</span>
+                    <button class="edit-button" onclick="editField('bio')">Edit</button>
+                </div>
+            </div>
+
+            <div class="field-group">
+                <div class="field-label">Social Media Links</div>
+                <div class="field-value">
+                    <div class="field-text">No social media links added</div>
+                    <button class="edit-button" onclick="addSocialMedia()">Add</button>
+                </div>
+            </div>
+
+            <div class="field-group">
+                <div class="field-label">Email Address</div>
+                <div class="field-value">
+                    <span id="email" class="field-text"></span>
+                    <button class="edit-button" onclick="modifyEmail()">Modify Email</button>
+                </div>
             </div>
         </div>
 
-        <div class="profile-card">
-            <div class="profile-section">
-                <h2>Profile Information</h2>
-                <form id="profileForm">
-                    <div class="form-group">
-                        <label for="name">Name</label>
-                        <input type="text" id="name" name="name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" name="email" required>
-                    </div>
-                    <button type="submit" class="btn">Update Profile</button>
-                </form>
+        <!-- Subscription Tab -->
+        <div id="subscription" class="tab-content">
+            <div class="subscription-header">
+                <h2>Your Standard Plan</h2>
+                <span class="status-badge">ACTIVE</span>
             </div>
-        </div>
 
-        <div class="profile-card">
-            <div class="profile-section">
-                <h2>Account Statistics</h2>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-number" id="imagesCount">0</div>
-                        <div class="stat-label">Images Generated</div>
+            <div class="subscription-grid">
+                <div>
+                    <h3>Usage Details</h3>
+                    <div class="field-group">
+                        <div class="field-label">Credits</div>
+                        <div class="field-text">540</div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="presetsCount">0</div>
-                        <div class="stat-label">Saved Presets</div>
+                    <div class="field-group">
+                        <div class="field-label">Stickers Generations</div>
+                        <div class="field-text">235</div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="memberSince">-</div>
-                        <div class="stat-label">Member Since</div>
+                    <div class="field-group">
+                        <div class="field-label">Collections</div>
+                        <div class="field-text">5</div>
+                    </div>
+                    <button class="primary-button">Buy more Credits</button>
+                </div>
+
+                <div>
+                    <h3>Plan Features</h3>
+                    <ul>
+                        <li>1000 credits</li>
+                        <li>General commercial terms</li>
+                        <li>Optional more credits on top</li>
+                        <li>3 concurrent fast jobs</li>
+                        <li>Unlimited Collections</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3>Billing & Payment</h3>
+                    <div class="field-group">
+                        <div class="field-label">Price</div>
+                        <div class="field-text">$30/mo</div>
+                    </div>
+                    <div class="field-group">
+                        <div class="field-label">Billing period</div>
+                        <div class="field-text">Monthly</div>
+                    </div>
+                    <div class="field-group">
+                        <div class="field-label">Renewal date</div>
+                        <div class="field-text">Dec 29, 2024</div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="secondary-button">Edit Billing</button>
+                        <button class="secondary-button">View Invoices</button>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Credits Tab -->
+        <div id="credits" class="tab-content">
+            <div class="credits-header">
+                <h2>My Credits</h2>
+                <a href="#" style="color: #ff1cf7;">About Credits?</a>
+            </div>
+
+            <div class="credits-count">
+                <span class="credits-number">11</span>
+                <button class="primary-button">Buy Credits</button>
+            </div>
+
+            <div class="credits-warning">
+                ⚠️ You have 2 credits that will expire within 30 days.
+                <p style="margin: 8px 0 0; font-size: 14px;">
+                    You don't need to manually select to use credits that are about to expire, as the system will automatically prioritize the use of the expiring credits.
+                </p>
+            </div>
+
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3>Credits Details</h3>
+                    <select class="secondary-button">
+                        <option>All records</option>
+                    </select>
+                </div>
+
+                <table class="credits-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Refill/Consume</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>20241225 10:15:00</td>
+                            <td style="color: #4caf50;">+2</td>
+                            <td>Giveaway</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
-    <script src="/js/topbar.js"></script>
+    <script src="/topbar.js"></script>
     <script>
-        function showMessage(text, isError = false) {
-            const messageDiv = document.getElementById('message');
-            messageDiv.textContent = text;
-            messageDiv.className = isError ? 'error' : 'success';
-            messageDiv.style.display = 'block';
-            setTimeout(() => {
-                messageDiv.style.display = 'none';
-            }, 5000);
-        }
-
-        function getInitials(name) {
-            return name
-                .split(' ')
-                .map(word => word[0])
-                .join('')
-                .slice(0, 2)
-                .toUpperCase();
-        }
-
-        function formatDate(dateString) {
-            return new Date(dateString).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
+        // Tab switching functionality
+        document.querySelectorAll('.profile-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+                history.pushState({}, '', `/profile?tab=${tab.dataset.tab}`);
             });
-        }
-
-        async function loadProfile() {
-            try {
-                const response = await fetch('/api/auth/me', {
-                    credentials: 'include'
-                });
-
-                if (!response.ok) {
-                    window.location.href = '/auth';
-                    return;
-                }
-
-                const { user } = await response.json();
-                
-                // Update profile information
-                document.getElementById('profileName').textContent = user.name;
-                document.getElementById('profileEmail').textContent = user.email;
-                document.getElementById('profileAvatar').textContent = getInitials(user.name);
-                
-                // Update form fields
-                document.getElementById('name').value = user.name;
-                document.getElementById('email').value = user.email;
-
-                // Update statistics
-                document.getElementById('imagesCount').textContent = user.images?.length || 0;
-                document.getElementById('presetsCount').textContent = user.presets?.length || 0;
-                document.getElementById('memberSince').textContent = formatDate(user.createdAt);
-
-            } catch (error) {
-                console.error('Error loading profile:', error);
-                showMessage('Error loading profile', true);
-            }
-        }
-
-        // Handle profile update
-        document.getElementById('profileForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            try {
-                const response = await fetch('/api/auth/update', {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify({
-                        name: document.getElementById('name').value,
-                        email: document.getElementById('email').value
-                    })
-                });
-
-                const data = await response.json();
-                
-                if (response.ok) {
-                    showMessage('Profile updated successfully');
-                    loadProfile(); // Reload profile data
-                } else {
-                    showMessage(data.error || 'Update failed', true);
-                }
-            } catch (error) {
-                console.error('Error updating profile:', error);
-                showMessage('Error updating profile', true);
-            }
         });
 
-        // Load profile data when page loads
-        loadProfile();
+        // Handle initial tab based on URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const activeTab = urlParams.get('tab') || 'personal';
+        document.querySelector(`[data-tab="${activeTab}"]`)?.click();
+
+        // Load user data
+        fetch('/api/auth/me')
+            .then(response => response.json())
+            .then(user => {
+                document.getElementById('nickname').textContent = user.name;
+                document.getElementById('email').textContent = user.email;
+                if (user.bio) {
+                    document.getElementById('bio').textContent = user.bio;
+                }
+            })
+            .catch(error => console.error('Error loading user data:', error));
+
+        function editField(field) {
+            const element = document.getElementById(field);
+            const currentValue = element.textContent;
+            const input = document.createElement('input');
+            input.value = currentValue;
+            input.style.width = '100%';
+            input.style.background = '#333';
+            input.style.border = 'none';
+            input.style.padding = '8px';
+            input.style.borderRadius = '4px';
+            input.style.color = '#fff';
+            
+            input.onblur = function() {
+                updateField(field, input.value);
+            };
+            
+            element.textContent = '';
+            element.appendChild(input);
+            input.focus();
+        }
+
+        function updateField(field, value) {
+            fetch('/api/auth/update', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ [field]: value }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById(field).textContent = value;
+            })
+            .catch(error => console.error('Error updating field:', error));
+        }
+
+        function addSocialMedia() {
+            alert('Social media link addition functionality coming soon!');
+        }
+
+        function modifyEmail() {
+            alert('Email modification functionality coming soon!');
+        }
     </script>
 </body>
 </html>

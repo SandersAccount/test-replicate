@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Collections - AI Image Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        body {
+            background: #111;
+            color: #fff;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .top-nav {
+            background: #111;
+            padding: 16px 24px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            border-bottom: 1px solid #222;
+        }
+
+        .nav-brand {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .nav-link {
+            color: #999;
+            text-decoration: none;
+            font-size: 16px;
+            transition: color 0.2s ease;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: #fff;
+        }
+
+        .collections-container {
+            max-width: 1200px;
+            margin: 80px auto 0;
+            padding: 0 24px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            color: #fff;
+            margin: 0 0 24px 0;
+        }
+
+        .collections-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 48px;
+        }
+
+        .collection-card {
+            background: #1E1E1E;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            aspect-ratio: 1;
+            border: 1px solid #333;
+            transition: transform 0.2s ease;
+        }
+
+        .collection-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .new-collection {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px dashed #333;
+            background: #1A1A1A;
+            aspect-ratio: 1;
+            height: 100%;
+        }
+
+        .new-collection:hover {
+            border-color: #ff1cf7;
+            background: #222;
+        }
+
+        .new-collection-icon {
+            font-size: 32px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .new-collection-text {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .collection-preview {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 4px;
+            padding: 4px;
+            background: #1A1A1A;
+        }
+
+        .preview-image {
+            position: relative;
+            background: #222;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .preview-image:first-child {
+            grid-column: span 2;
+            grid-row: span 2;
+        }
+
+        .preview-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .placeholder-image {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #444;
+            background: #1A1A1A;
+        }
+
+        .collection-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 16px;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+        }
+
+        .collection-name {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .collection-count {
+            color: #999;
+            font-size: 14px;
+        }
+
+        .generations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 24px;
+        }
+
+        .generation-card {
+            background: #1E1E1E;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            aspect-ratio: 1;
+            transition: transform 0.2s ease;
+        }
+
+        .generation-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .generation-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .menu-trigger {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+
+        .collection-card:hover .menu-trigger,
+        .generation-card:hover .menu-trigger {
+            opacity: 1;
+        }
+
+        .menu-trigger:hover {
+            background: rgba(255, 28, 247, 0.2);
+        }
+
+        .menu-dots {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            padding: 8px;
+        }
+
+        .menu-dot {
+            width: 4px;
+            height: 4px;
+            background: #fff;
+            border-radius: 50%;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 4px);
+            right: 0;
+            background: #2A2A2A;
+            border-radius: 8px;
+            padding: 8px 0;
+            min-width: 180px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            display: none;
+            z-index: 1000;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 8px 16px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background: #333;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <nav class="top-nav">
+        <a href="/" class="nav-brand">Sticker Generator</a>
+        <div class="nav-links">
+            <a href="/generator" class="nav-link">Generator</a>
+            <a href="/collections" class="nav-link active">Collections</a>
+        </div>
+    </nav>
+
+    <div class="collections-container">
+        <h2 class="section-title">Your Collections</h2>
+        <div class="collections-grid" id="collectionsGrid">
+            <div class="collection-card new-collection" onclick="createNewCollection()">
+                <div class="new-collection-icon">+</div>
+                <div class="new-collection-text">Create New Collection</div>
+            </div>
+            <!-- Collections will be loaded here -->
+        </div>
+
+        <h2 class="section-title">Recent Generations</h2>
+        <div class="generations-grid" id="generationsGrid">
+            <!-- Generations will be loaded here -->
+        </div>
+    </div>
+
+    <script>
+        // Handle dropdown menus
+        function setupDropdownMenus() {
+            document.querySelectorAll('.menu-trigger').forEach(trigger => {
+                trigger.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const dropdown = trigger.querySelector('.dropdown-menu');
+                    
+                    // Close all other dropdowns
+                    document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                        if (menu !== dropdown) {
+                            menu.classList.remove('show');
+                        }
+                    });
+                    
+                    dropdown.classList.toggle('show');
+                });
+            });
+
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.menu-trigger')) {
+                    document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                        menu.classList.remove('show');
+                    });
+                }
+            });
+        }
+
+        async function createNewCollection() {
+            const title = prompt('Enter collection name:');
+            if (!title) return;
+
+            try {
+                const response = await fetch('/api/collections', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ title })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to create collection');
+                }
+
+                loadCollections();
+            } catch (error) {
+                console.error('Error creating collection:', error);
+                alert('Failed to create collection');
+            }
+        }
+
+        function renderCollections(collections) {
+            const grid = document.getElementById('collectionsGrid');
+            const newCollectionCard = grid.firstElementChild;
+            
+            if (collections.length === 0) {
+                grid.innerHTML = '';
+                grid.appendChild(newCollectionCard);
+                return;
+            }
+
+            grid.innerHTML = '';
+            grid.appendChild(newCollectionCard);
+
+            collections.forEach(collection => {
+                const card = document.createElement('div');
+                card.className = 'collection-card';
+                card.onclick = (e) => {
+                    if (!e.target.closest('.menu-trigger')) {
+                        window.location.href = `/collection/${collection._id}`;
+                    }
+                };
+
+                card.innerHTML = `
+                    <div class="collection-preview">
+                        ${collection.recentImages && collection.recentImages.length > 0 ? 
+                            collection.recentImages.map((img, index) => `
+                                <div class="preview-image">
+                                    <img src="${img}" alt="Collection preview">
+                                </div>
+                            `).join('') :
+                            Array(4).fill(`
+                                <div class="preview-image">
+                                    <div class="placeholder-image">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                            <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+                                            <path d="M4 16l4-4 8 8" stroke="currentColor" stroke-width="2"/>
+                                            <circle cx="16" cy="8" r="2" stroke="currentColor" stroke-width="2"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            `).join('')
+                        }
+                    </div>
+                    <div class="collection-info">
+                        <div class="collection-name">${collection.title}</div>
+                        <div class="collection-count">${collection.imageCount || 0} images</div>
+                    </div>
+                    <div class="menu-trigger">
+                        <div class="menu-dots">
+                            <div class="menu-dot"></div>
+                            <div class="menu-dot"></div>
+                            <div class="menu-dot"></div>
+                        </div>
+                        <div class="dropdown-menu">
+                            <div class="dropdown-item">Rename</div>
+                            <div class="dropdown-item">Share</div>
+                            <div class="dropdown-item">Delete</div>
+                        </div>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+
+            setupDropdownMenus();
+        }
+
+        function renderGenerations(generations) {
+            const grid = document.getElementById('generationsGrid');
+            
+            if (generations.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <p>No generations yet. Start creating some stickers!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = generations.map(generation => `
+                <div class="generation-card">
+                    <img src="${generation.imageData}" alt="Generated sticker" class="generation-image">
+                    <div class="menu-trigger">
+                        <div class="menu-dots">
+                            <div class="menu-dot"></div>
+                            <div class="menu-dot"></div>
+                            <div class="menu-dot"></div>
+                        </div>
+                        <div class="dropdown-menu">
+                            <div class="dropdown-item">Prompt</div>
+                            <div class="dropdown-item">Move to Collection</div>
+                            <div class="dropdown-item">Download</div>
+                            <div class="dropdown-item">Upscale</div>
+                            <div class="dropdown-item">Move to Trash</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            setupDropdownMenus();
+        }
+
+        async function loadCollections() {
+            try {
+                const response = await fetch('/api/collections', {
+                    credentials: 'include'
+                });
+                const collections = await response.json();
+                renderCollections(collections);
+            } catch (error) {
+                console.error('Error loading collections:', error);
+            }
+        }
+
+        async function loadGenerations() {
+            try {
+                const response = await fetch('/api/generations', {
+                    credentials: 'include'
+                });
+                const generations = await response.json();
+                renderGenerations(generations);
+            } catch (error) {
+                console.error('Error loading generations:', error);
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCollections();
+            loadGenerations();
+        });
+    </script>
+</body>
+</html>

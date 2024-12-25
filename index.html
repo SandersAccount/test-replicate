@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Image Generator</title>
+    <title>AI Sticker Generator</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/styles.css">
     <style>
@@ -13,7 +13,11 @@
             padding: 0 1rem;
         }
         
-        .input-group {
+        .generator-form {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group {
             margin-bottom: 1rem;
         }
         
@@ -46,11 +50,6 @@
             background-color: #45a049;
         }
         
-        .loading {
-            display: none;
-            margin: 1rem 0;
-        }
-        
         .result {
             margin-top: 2rem;
         }
@@ -65,65 +64,80 @@
             color: #ff0000;
             margin-top: 1rem;
         }
+        
+        .loading {
+            margin: 1rem 0;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>AI Image Generator</h1>
-        <div class="input-group">
-            <label for="prompt">Enter your prompt:</label>
-            <textarea id="prompt" placeholder="Describe the image you want to generate..."></textarea>
+        
+        <div class="generator-form">
+            <div class="form-group">
+                <label for="prompt">Enter your prompt:</label>
+                <textarea id="prompt" rows="4"></textarea>
+            </div>
+            
+            <button id="generate" class="btn-primary">Generate Image</button>
         </div>
-        <button id="generate">Generate Image</button>
-        <div id="loading" class="loading">Generating image...</div>
-        <div id="error" class="error"></div>
+
         <div id="result" class="result"></div>
     </div>
 
-    <script src="/topbar.js"></script>
-    <script>
-        document.getElementById('generate').addEventListener('click', async () => {
-            const prompt = document.getElementById('prompt').value;
-            const loading = document.getElementById('loading');
-            const error = document.getElementById('error');
-            const result = document.getElementById('result');
-            
-            if (!prompt) {
-                error.textContent = 'Please enter a prompt';
-                return;
-            }
-            
-            loading.style.display = 'block';
-            error.textContent = '';
-            result.innerHTML = '';
-            
+    <script type="module">
+        import { createTopbar } from '/js/components/Topbar.js';
+        import { createGenerationCard } from '/js/components/GenerationCard.js';
+
+        async function initializePage() {
             try {
-                const response = await fetch('/generate', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ prompt })
+                await createTopbar();
+
+                document.getElementById('generate').addEventListener('click', async () => {
+                    const prompt = document.getElementById('prompt').value;
+                    const resultDiv = document.getElementById('result');
+                    const generateBtn = document.getElementById('generate');
+                    
+                    if (!prompt) {
+                        alert('Please enter a prompt');
+                        return;
+                    }
+                    
+                    generateBtn.disabled = true;
+                    generateBtn.textContent = 'Generating...';
+                    resultDiv.innerHTML = '<div class="loading">Generating your sticker...</div>';
+                    
+                    try {
+                        const response = await fetch('/generate', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ prompt })
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error('Generation failed');
+                        }
+                        
+                        const data = await response.json();
+                        resultDiv.innerHTML = '';
+                        resultDiv.appendChild(createGenerationCard(data));
+                        
+                    } catch (error) {
+                        resultDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                    } finally {
+                        generateBtn.disabled = false;
+                        generateBtn.textContent = 'Generate Image';
+                    }
                 });
-                
-                if (!response.ok) {
-                    throw new Error('Failed to generate image');
-                }
-                
-                const data = await response.json();
-                if (data.output && Array.isArray(data.output) && data.output.length > 0) {
-                    const img = document.createElement('img');
-                    img.src = data.output[0];
-                    result.appendChild(img);
-                } else {
-                    throw new Error('Invalid response format');
-                }
-            } catch (err) {
-                error.textContent = err.message;
-            } finally {
-                loading.style.display = 'none';
+            } catch (error) {
+                console.error('Error initializing page:', error);
             }
-        });
+        }
+
+        initializePage();
     </script>
 </body>
 </html>

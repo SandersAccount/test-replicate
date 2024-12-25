@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collection Details</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div id="topbar"></div>
+    
+    <div class="container">
+        <div class="collection-header">
+            <h1 id="collection-title"></h1>
+            <p id="image-count"></p>
+        </div>
+
+        <div id="images-grid" class="images-grid">
+            <!-- Images will be loaded here -->
+        </div>
+    </div>
+
+    <script src="/topbar.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const collectionId = window.location.pathname.split('/').pop();
+            
+            try {
+                const response = await fetch(`/api/collections/${collectionId}`, {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch collection details');
+                }
+                
+                const data = await response.json();
+                
+                // Update page title and count
+                document.getElementById('collection-title').textContent = data.collection.title;
+                document.getElementById('image-count').textContent = `${data.images.length} images`;
+                
+                // Display images
+                const imagesGrid = document.getElementById('images-grid');
+                data.images.forEach(image => {
+                    const imageContainer = document.createElement('div');
+                    imageContainer.className = 'image-container';
+                    
+                    const img = document.createElement('img');
+                    img.src = image.imageData;
+                    img.alt = image.prompt || 'Generated image';
+                    
+                    const prompt = document.createElement('p');
+                    prompt.className = 'image-prompt';
+                    prompt.textContent = image.prompt;
+                    
+                    imageContainer.appendChild(img);
+                    imageContainer.appendChild(prompt);
+                    imagesGrid.appendChild(imageContainer);
+                });
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to load collection details');
+            }
+        });
+    </script>
+</body>
+</html>

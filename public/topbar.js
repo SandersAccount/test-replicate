@@ -1,55 +1,117 @@
 // Create and inject the topbar
-function createTopbar() {
-    const topbar = document.createElement('div');
-    topbar.className = 'topbar';
-    topbar.innerHTML = `
-        <a href="/" class="logo">AI Image Generator</a>
-        <div class="profile-section">
-            <div class="profile-circle" id="profileButton">
-                <span>👤</span>
+class Topbar extends HTMLElement {
+    constructor() {
+        super();
+    }
+
+    async connectedCallback() {
+        const response = await fetch('/api/auth/user');
+        const userData = await response.json();
+        
+        this.innerHTML = `
+            <div class="topbar">
+                <div class="logo">
+                    <a href="/">Sticker Generator</a>
+                </div>
+                <div class="profile-section">
+                    <div class="profile-trigger" id="profileTrigger">
+                        <div class="profile-avatar">
+                            ${this.getInitials(userData.name)}
+                        </div>
+                    </div>
+                    <div class="profile-dropdown" id="profileDropdown">
+                        <div class="dropdown-header">
+                            <div class="user-info">
+                                <div class="profile-avatar">${this.getInitials(userData.name)}</div>
+                                <div class="user-details">
+                                    <div class="user-name">${userData.name}</div>
+                                    <div class="user-email">${userData.email}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="upgrade-banner">
+                            <div class="banner-content">
+                                <div class="plan-info">
+                                    <div class="plan-name">Basic Plan</div>
+                                    <div class="plan-description">Upgrade to unlock all the premium features & resources</div>
+                                </div>
+                                <button class="upgrade-button">Upgrade with 20% OFF</button>
+                            </div>
+                        </div>
+
+                        <div class="dropdown-menu">
+                            <a href="/profile" class="menu-item">
+                                <i class="fas fa-user"></i>
+                                Personal Info
+                            </a>
+                            <a href="/profile?tab=subscription" class="menu-item">
+                                <i class="fas fa-crown"></i>
+                                Subscription
+                            </a>
+                            <a href="/profile?tab=credits" class="menu-item">
+                                <i class="fas fa-coins"></i>
+                                Credits
+                            </a>
+                        </div>
+
+                        <div class="dropdown-footer">
+                            <a href="#" class="menu-item" id="signOutButton">
+                                <i class="fas fa-sign-out-alt"></i>
+                                Sign Out
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="profile-menu" id="profileMenu">
-                <a href="/profile">Profile</a>
-                <a href="/plans">Subscription</a>
-                <a href="#" id="logoutButton">Logout</a>
-            </div>
-        </div>
-    `;
+        `;
 
-    // Insert the topbar at the beginning of the body
-    document.body.insertBefore(topbar, document.body.firstChild);
+        this.initializeDropdown();
+        this.initializeSignOut();
+    }
 
-    // Add event listeners
-    const profileButton = document.getElementById('profileButton');
-    const profileMenu = document.getElementById('profileMenu');
-    const logoutButton = document.getElementById('logoutButton');
+    getInitials(name) {
+        return name
+            .split(' ')
+            .map(word => word[0])
+            .join('')
+            .toUpperCase();
+    }
 
-    profileButton.addEventListener('click', () => {
-        profileMenu.classList.toggle('active');
-    });
+    initializeDropdown() {
+        const trigger = this.querySelector('#profileTrigger');
+        const dropdown = this.querySelector('#profileDropdown');
 
-    // Close menu when clicking outside
-    document.addEventListener('click', (event) => {
-        if (!profileButton.contains(event.target) && !profileMenu.contains(event.target)) {
-            profileMenu.classList.remove('active');
-        }
-    });
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown.classList.toggle('show');
+        });
 
-    logoutButton.addEventListener('click', async (event) => {
-        event.preventDefault();
-        try {
-            const response = await fetch('/api/auth/logout', {
-                method: 'POST',
-                credentials: 'include'
-            });
-            if (response.ok) {
-                window.location.href = '/auth';
+        document.addEventListener('click', (e) => {
+            if (!dropdown.contains(e.target) && !trigger.contains(e.target)) {
+                dropdown.classList.remove('show');
             }
-        } catch (error) {
-            console.error('Error logging out:', error);
-        }
-    });
+        });
+    }
+
+    initializeSignOut() {
+        const signOutButton = this.querySelector('#signOutButton');
+        signOutButton.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                await fetch('/api/auth/logout', { method: 'POST' });
+                window.location.href = '/login';
+            } catch (error) {
+                console.error('Logout failed:', error);
+            }
+        });
+    }
 }
 
+customElements.define('top-bar', Topbar);
+
 // Call createTopbar when the DOM is loaded
-document.addEventListener('DOMContentLoaded', createTopbar);
+document.addEventListener('DOMContentLoaded', () => {
+    const topbar = document.createElement('top-bar');
+    document.body.insertBefore(topbar, document.body.firstChild);
+});

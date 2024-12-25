@@ -2,8 +2,12 @@ import express from 'express';
 import auth from '../middleware/auth.js';
 import subscriptionService from '../services/subscription.js';
 import plans from '../config/plans.js';
+import Stripe from 'stripe';
 
 const router = express.Router();
+
+// Initialize Stripe
+const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 
 // Root endpoint
 router.get('/', auth, async (req, res) => {

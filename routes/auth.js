@@ -2,7 +2,7 @@ import express from 'express';
 import { body, validationResult } from 'express-validator';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
-import { auth } from '../middleware/auth.js';
+import Auth from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -96,7 +96,7 @@ router.post('/login', [
 });
 
 // Get current user
-router.get('/me', auth, async (req, res) => {
+router.get('/me', Auth, async (req, res) => {
     try {
         if (!req.user) {
             return res.status(401).json({ error: 'User not found' });
@@ -116,7 +116,7 @@ router.get('/me', auth, async (req, res) => {
 });
 
 // Update user profile
-router.put('/update', auth, [
+router.put('/update', Auth, [
     body('name').notEmpty(),
     body('email').isEmail()
 ], async (req, res) => {

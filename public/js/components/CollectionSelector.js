@@ -1,0 +1,107 @@
+export class CollectionSelector {
+    constructor() {
+        this.modal = this.createModal();
+        document.body.appendChild(this.modal);
+        this.setupEventListeners();
+    }
+
+    createModal() {
+        const modal = document.createElement('div');
+        modal.className = 'collection-selector-modal modal';
+        modal.innerHTML = `
+            <div class="modal-content collection-selector">
+                <h3>Save to Collection</h3>
+                <div class="collections-list"></div>
+                <div class="new-collection-option">
+                    <div class="new-collection-button">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <span>Create New Collection</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        return modal;
+    }
+
+    setupEventListeners() {
+        // Close when clicking outside
+        this.modal.addEventListener('click', (e) => {
+            if (e.target === this.modal) {
+                this.hide();
+            }
+        });
+
+        // Handle new collection button
+        const newCollectionBtn = this.modal.querySelector('.new-collection-button');
+        newCollectionBtn.addEventListener('click', () => {
+            this.hide();
+            // Show the create collection modal
+            document.getElementById('newCollectionModal').classList.add('active');
+            // Store the generation ID to be added after collection creation
+            window.localStorage.setItem('pendingGenerationId', this.currentGenerationId);
+        });
+    }
+
+    async loadCollections() {
+        try {
+            const response = await fetch('/api/collections');
+            if (!response.ok) throw new Error('Failed to load collections');
+            
+            const collections = await response.json();
+            this.renderCollections(collections);
+        } catch (error) {
+            console.error('Error loading collections:', error);
+        }
+    }
+
+    renderCollections(collections) {
+        const list = this.modal.querySelector('.collections-list');
+        list.innerHTML = '';
+
+        collections.forEach(collection => {
+            const item = document.createElement('div');
+            item.className = 'collection-item';
+            item.innerHTML = `
+                <span class="collection-title">${collection.title}</span>
+                <span class="collection-count">${collection.images?.length || 0} images</span>
+            `;
+
+            item.addEventListener('click', () => this.addToCollection(collection._id));
+            list.appendChild(item);
+        });
+    }
+
+    async addToCollection(collectionId) {
+        try {
+            const response = await fetch(`/api/collections/${collectionId}/images`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ generationId: this.currentGenerationId })
+            });
+
+            if (!response.ok) throw new Error('Failed to add to collection');
+            
+            this.hide();
+            // Notify that image was added to collection
+            window.dispatchEvent(new CustomEvent('imageAddedToCollection', {
+                detail: { collectionId, generationId: this.currentGenerationId }
+            }));
+        } catch (error) {
+            console.error('Error adding to collection:', error);
+        }
+    }
+
+    show(generationId) {
+        this.currentGenerationId = generationId;
+        this.loadCollections();
+        this.modal.classList.add('active');
+    }
+
+    hide() {
+        this.modal.classList.remove('active');
+    }
+}

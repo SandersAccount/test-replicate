@@ -1,27 +1,12 @@
 import express from 'express';
 import User from '../models/User.js';
 import auth from '../middleware/auth.js';
+import adminAuth from '../middleware/adminAuth.js';
 
 const router = express.Router();
 
-// Middleware to check if user is admin
-const isAdmin = async (req, res, next) => {
-    console.log('Admin check for user:', {
-        id: req.user._id,
-        email: req.user.email,
-        role: req.user.role
-    });
-
-    if (req.user.role !== 'admin') {
-        console.log('Access denied: User is not an admin');
-        return res.status(403).json({ error: 'Access denied' });
-    }
-    console.log('Admin access granted');
-    next();
-};
-
 // Root endpoint
-router.get('/', [auth, isAdmin], async (req, res) => {
+router.get('/', [auth, adminAuth], async (req, res) => {
     res.json({
         message: 'Admin API',
         endpoints: {
@@ -34,7 +19,7 @@ router.get('/', [auth, isAdmin], async (req, res) => {
 });
 
 // Get all users (with pagination and filters)
-router.get('/users', [auth, isAdmin], async (req, res) => {
+router.get('/users', [auth, adminAuth], async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
@@ -71,7 +56,7 @@ router.get('/users', [auth, isAdmin], async (req, res) => {
 });
 
 // Get user details
-router.get('/users/:userId', [auth, isAdmin], async (req, res) => {
+router.get('/users/:userId', [auth, adminAuth], async (req, res) => {
     try {
         console.log('Fetching user details for user ID:', req.params.userId);
         const user = await User.findById(req.params.userId).select('-password');
@@ -88,7 +73,7 @@ router.get('/users/:userId', [auth, isAdmin], async (req, res) => {
 });
 
 // Update user
-router.put('/users/:userId', [auth, isAdmin], async (req, res) => {
+router.put('/users/:userId', [auth, adminAuth], async (req, res) => {
     try {
         console.log('Updating user with ID:', req.params.userId);
         const { role, subscription } = req.body;
@@ -117,7 +102,7 @@ router.put('/users/:userId', [auth, isAdmin], async (req, res) => {
 });
 
 // Update user status
-router.put('/users/:userId/status', [auth, isAdmin], async (req, res) => {
+router.put('/users/:userId/status', [auth, adminAuth], async (req, res) => {
     try {
         console.log('Updating user status:', {
             userId: req.params.userId,
@@ -167,7 +152,7 @@ router.put('/users/:userId/status', [auth, isAdmin], async (req, res) => {
 });
 
 // Get system statistics
-router.get('/stats', [auth, isAdmin], async (req, res) => {
+router.get('/stats', [auth, adminAuth], async (req, res) => {
     try {
         console.log('Fetching system statistics');
 
