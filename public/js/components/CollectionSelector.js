@@ -3,6 +3,7 @@ export class CollectionSelector {
         this.modal = this.createModal();
         document.body.appendChild(this.modal);
         this.setupEventListeners();
+        this.collectionModal = document.querySelector('collection-modal');
     }
 
     createModal() {
@@ -37,10 +38,15 @@ export class CollectionSelector {
         const newCollectionBtn = this.modal.querySelector('.new-collection-button');
         newCollectionBtn.addEventListener('click', () => {
             this.hide();
-            // Show the create collection modal
-            document.getElementById('newCollectionModal').classList.add('active');
-            // Store the generation ID to be added after collection creation
-            window.localStorage.setItem('pendingGenerationId', this.currentGenerationId);
+            // Show the new collection modal
+            if (this.collectionModal) {
+                this.collectionModal.showNewCollectionDialog();
+            }
+        });
+
+        // Listen for collection creation
+        window.addEventListener('collectionCreated', () => {
+            this.loadCollections();
         });
     }
 
@@ -86,12 +92,20 @@ export class CollectionSelector {
             if (!response.ok) throw new Error('Failed to add to collection');
             
             this.hide();
+            // Create a toast notification
+            const toast = document.createElement('toast-notification');
+            document.body.appendChild(toast);
+            toast.show('Image added to collection', 'success');
+
             // Notify that image was added to collection
             window.dispatchEvent(new CustomEvent('imageAddedToCollection', {
                 detail: { collectionId, generationId: this.currentGenerationId }
             }));
         } catch (error) {
             console.error('Error adding to collection:', error);
+            const toast = document.createElement('toast-notification');
+            document.body.appendChild(toast);
+            toast.show('Failed to add to collection', 'error');
         }
     }
 

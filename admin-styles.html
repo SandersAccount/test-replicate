@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Manage Styles</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        .styles-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 2rem;
+            background: #1a1a1a;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .styles-table th,
+        .styles-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+
+        .styles-table th {
+            background: #2a2a2a;
+            font-weight: 500;
+            color: #fff;
+        }
+
+        .style-image {
+            width: 90px;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 4px;
+            padding: 0;
+            margin: 0;
+            display: block;
+        }
+
+        .styles-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #333;
+            vertical-align: middle;
+        }
+
+        .styles-table td:first-child {
+            width: 90px;
+            padding: 0.5rem;
+        }
+
+        .add-style-form {
+            background: #1a1a1a;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+
+        .form-group input[type="text"],
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #333;
+            border-radius: 4px;
+            background: #2a2a2a;
+            color: #fff;
+            font-family: inherit;
+        }
+
+        .form-group input[type="file"] {
+            display: none;
+        }
+
+        .file-upload-label {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: #2a2a2a;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #fff;
+        }
+
+        .file-name {
+            margin-left: 1rem;
+            color: #999;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn-edit,
+        .btn-delete {
+            padding: 0.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #fff;
+        }
+
+        .btn-edit {
+            background: #4a4a4a;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            color: #fff;
+            margin: 0;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .preview-image {
+            width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            margin-bottom: 1rem;
+            background: #2a2a2a;
+            border-radius: 4px;
+        }
+
+        .reorder-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .btn-reorder {
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+
+        .btn-reorder:hover {
+            color: white;
+        }
+
+        .btn-reorder:disabled {
+            color: #444;
+            cursor: not-allowed;
+        }
+
+        .sortable {
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .sortable:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        .sortable::after {
+            content: '↕️';
+            margin-left: 5px;
+            opacity: 0.3;
+        }
+        
+        .sortable.asc::after {
+            content: '↑';
+            opacity: 1;
+        }
+        
+        .sortable.desc::after {
+            content: '↓';
+            opacity: 1;
+        }
+
+        /* Add styles for the save order button */
+        .order-actions {
+            margin: 20px 0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn-save-order {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-save-order:hover {
+            background-color: #45a049;
+        }
+
+        .btn-save-order:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .btn-save-order i {
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="topbar"></div>
+    
+    <div class="container">
+        <h1>Manage Styles</h1>
+        
+        <div class="order-actions">
+            <button id="saveOrderBtn" class="btn-save-order" style="display: none;">
+                <i class="fas fa-save"></i>
+                Save Order
+            </button>
+        </div>
+
+        <form id="addStyleForm" class="add-style-form">
+            <div class="form-group">
+                <label for="styleName">Style Name</label>
+                <input type="text" id="styleName" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="stylePrompt">Style Prompt</label>
+                <textarea id="stylePrompt" rows="3" required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label class="file-upload-label" for="styleImage">
+                    <i class="fas fa-upload"></i> Upload Image
+                </label>
+                <input type="file" id="styleImage" accept="image/*" required>
+                <span class="file-name"></span>
+            </div>
+            
+            <button type="submit" class="btn-primary">Add Style</button>
+        </form>
+
+        <table class="styles-table">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th class="sortable" data-sort="name">Name</th>
+                    <th>Prompt</th>
+                    <th>Actions</th>
+                    <th>Order</th>
+                </tr>
+            </thead>
+            <tbody id="stylesTableBody">
+                <!-- Styles will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Edit Style</h2>
+                <button class="close-modal" onclick="closeEditModal()">&times;</button>
+            </div>
+            <form id="editStyleForm">
+                <input type="hidden" id="editStyleId">
+                <img id="previewImage" class="preview-image" src="" alt="Style preview">
+                
+                <div class="form-group">
+                    <label for="editStyleName">Style Name</label>
+                    <input type="text" id="editStyleName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editStylePrompt">Style Prompt</label>
+                    <textarea id="editStylePrompt" rows="3" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="file-upload-label" for="editStyleImage">
+                        <i class="fas fa-upload"></i> Change Image
+                    </label>
+                    <input type="file" id="editStyleImage" accept="image/*">
+                    <span class="edit-file-name"></span>
+                </div>
+                
+                <button type="submit" class="btn-primary">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createTopbar } from '/js/components/Topbar.js';
+
+        // Initialize topbar
+        const topbarElement = document.getElementById('topbar');
+        createTopbar(topbarElement);
+
+        // Add sorting state
+        let currentSort = {
+            field: 'order',
+            order: 'asc'
+        };
+
+        // Track unsaved changes
+        let hasUnsavedChanges = false;
+        const saveOrderBtn = document.getElementById('saveOrderBtn');
+
+        // Helper function to escape HTML
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Helper function to escape strings for JavaScript
+        function escapeForJS(str) {
+            return str
+                .replace(/\\/g, '\\\\')
+                .replace(/'/g, "\\'")
+                .replace(/"/g, '\\"')
+                .replace(/\n/g, '\\n')
+                .replace(/\r/g, '\\r')
+                .replace(/\t/g, '\\t');
+        }
+
+        // Function to show/hide save button
+        function updateSaveOrderButton() {
+            saveOrderBtn.style.display = hasUnsavedChanges ? 'flex' : 'none';
+        }
+
+        // Load styles
+        async function loadStyles() {
+            try {
+                const response = await fetch(`/api/styles?sortBy=${currentSort.field}&sortOrder=${currentSort.order}`, {
+                    credentials: 'include'
+                });
+                
+                if (response.status === 403) {
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                if (!response.ok) throw new Error('Failed to fetch styles');
+                
+                const styles = await response.json();
+                const tbody = document.getElementById('stylesTableBody');
+                
+                // Update sort indicators
+                document.querySelectorAll('th.sortable').forEach(th => {
+                    const field = th.dataset.sort;
+                    th.classList.remove('asc', 'desc');
+                    if (field === currentSort.field) {
+                        th.classList.add(currentSort.order);
+                    }
+                });
+                
+                if (styles.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="empty-state">
+                                <i class="fas fa-paint-brush"></i>
+                                <p>No styles added yet</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                tbody.innerHTML = styles.map((style, index) => {
+                    const escapedName = escapeForJS(style.name);
+                    const escapedPrompt = escapeForJS(style.prompt);
+                    const escapedImageUrl = escapeForJS(style.imageUrl);
+
+                    return `
+                        <tr data-id="${style._id}">
+                            <td><img src="${escapeHtml(style.imageUrl)}" alt="${escapeHtml(style.name)}" class="style-image"></td>
+                            <td>${escapeHtml(style.name)}</td>
+                            <td>${escapeHtml(style.prompt)}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-edit" onclick="editStyle('${style._id}', '${escapedName}', '${escapedPrompt}', '${escapedImageUrl}')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn-delete" onclick="deleteStyle('${style._id}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="reorder-buttons">
+                                    <button class="btn-reorder" onclick="reorderStyle('${style._id}', 'up')" ${currentSort.field === 'order' && index === 0 ? 'disabled' : ''}>
+                                        <i class="fas fa-chevron-up"></i>
+                                    </button>
+                                    <button class="btn-reorder" onclick="reorderStyle('${style._id}', 'down')" ${currentSort.field === 'order' && index === styles.length - 1 ? 'disabled' : ''}>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                console.error('Error loading styles:', error);
+                alert('Failed to load styles');
+            }
+        }
+
+        // Add click handlers for sortable columns
+        document.querySelectorAll('th.sortable').forEach(th => {
+            th.addEventListener('click', () => {
+                const field = th.dataset.sort;
+                if (field === currentSort.field) {
+                    // Toggle order if clicking the same field
+                    currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc';
+                } else {
+                    // Set new field and default to ascending
+                    currentSort.field = field;
+                    currentSort.order = 'asc';
+                }
+                loadStyles();
+            });
+        });
+
+        // Add edit and delete functions to window scope
+        window.editStyle = (id, name, prompt, imageUrl) => {
+            const modal = document.getElementById('editModal');
+            document.getElementById('editStyleId').value = id;
+            document.getElementById('editStyleName').value = name;
+            document.getElementById('editStylePrompt').value = prompt;
+            document.getElementById('previewImage').src = imageUrl;
+            modal.classList.add('active');
+        };
+
+        window.deleteStyle = async (styleId) => {
+            if (!confirm('Are you sure you want to delete this style?')) return;
+            
+            try {
+                const response = await fetch(`/api/styles/${styleId}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) throw new Error('Failed to delete style');
+                
+                loadStyles();
+                
+            } catch (error) {
+                console.error('Error deleting style:', error);
+                alert('Failed to delete style');
+            }
+        };
+
+        // Reorder style
+        window.reorderStyle = async (styleId, direction) => {
+            try {
+                const response = await fetch('/api/styles/reorder', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ styleId, direction })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to reorder style');
+                }
+
+                await loadStyles();
+                hasUnsavedChanges = true;
+                updateSaveOrderButton();
+            } catch (error) {
+                console.error('Error reordering style:', error);
+                alert(error.message || 'Failed to reorder style');
+            }
+        };
+
+        // Add save order functionality
+        saveOrderBtn.addEventListener('click', async () => {
+            try {
+                saveOrderBtn.disabled = true;
+                saveOrderBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+                // Get all styles in current order
+                const styles = Array.from(document.querySelectorAll('#stylesTableBody tr'))
+                    .map(row => ({
+                        _id: row.dataset.id
+                    }));
+
+                const response = await fetch('/api/styles/save-order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ styles })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to save order');
+                }
+
+                hasUnsavedChanges = false;
+                updateSaveOrderButton();
+                alert('Order saved successfully');
+            } catch (error) {
+                console.error('Error saving order:', error);
+                alert('Failed to save order');
+            } finally {
+                saveOrderBtn.disabled = false;
+                saveOrderBtn.innerHTML = '<i class="fas fa-save"></i> Save Order';
+            }
+        });
+
+        // Load styles on page load
+        loadStyles();
+    </script>
+</body>
+</html>

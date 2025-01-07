@@ -3,6 +3,8 @@ import { body, validationResult } from 'express-validator';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import Auth from '../middleware/auth.js';
+import Generation from '../models/Generation.js';
+import Collection from '../models/Collection.js';
 
 const router = express.Router();
 
@@ -99,18 +101,35 @@ router.post('/login', [
 router.get('/me', Auth, async (req, res) => {
     try {
         if (!req.user) {
-            return res.status(401).json({ error: 'User not found' });
+            return res.status(401).json({ error: 'Not authenticated' });
         }
 
-        res.json({ 
-            user: { 
-                id: req.user._id, 
-                email: req.user.email, 
-                name: req.user.name 
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Get user statistics
+        const [generationsCount, collectionsCount] = await Promise.all([
+            Generation.countDocuments({ userId: user._id }),
+            Collection.countDocuments({ userId: user._id })
+        ]);
+
+        // Return user data with statistics
+        res.json({
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            credits: user.credits,
+            role: user.role,
+            subscription: user.subscription,
+            statistics: {
+                generationsCount,
+                collectionsCount
             }
         });
     } catch (error) {
-        console.error('Get user error:', error);
+        console.error('Error fetching user:', error);
         res.status(500).json({ error: 'Server error' });
     }
 });

@@ -11,74 +11,144 @@ body {
 
 /* Topbar styles */
 .topbar {
-    background-color: #1a1a1a;
-    padding: 10px 20px;
+    background-color: rgb(37 37 37);
+    padding: 0.75rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.topbar-content {
+    max-width: 800px;
+    margin: 0 auto;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    height: 40px;
+    padding: 0 1rem;
+}
+
+.topbar-left {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.topbar-center {
+    display: flex;
+    gap: 1rem;
+    flex: 2;
+    justify-content: center;
+}
+
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    justify-content: flex-end;
 }
 
 .logo {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #333;
+    color: #ffffff;
     text-decoration: none;
-}
-
-.user-section {
-    position: relative;
+    font-size: 1.25rem;
+    font-weight: bold;
     display: flex;
     align-items: center;
 }
 
-.profile-circle {
-    width: 36px;
-    height: 36px;
+.nav-link {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 0.9375rem;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    transition: background-color 0.2s;
+}
+
+.nav-link:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.nav-link.active {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* User menu styles */
+.user-menu-button {
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.credits-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    color: #ffffff;
+    font-size: 0.9375rem;
+}
+
+.credits-indicator i {
+    color: #FFD700;
+    font-size: 0.875rem;
+}
+
+.btn-upgrade {
+    background: #4CAF50;
+    color: #ffffff;
+    text-decoration: none;
+    padding: 0.375rem 1rem;
+    border-radius: 20px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 0.9375rem;
+}
+
+.btn-upgrade:hover {
+    background-color: #45a049;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    background-color: #333;
+    background: #4CAF50;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    transition: background-color 0.3s;
+    color: #ffffff;
+    font-weight: 500;
+    font-size: 0.875rem;
 }
 
-.profile-circle:hover {
-    background-color: #444;
+/* Adjust main content for sticky header */
+main, .container {
+    padding-top: 1rem;
 }
 
-.profile-menu {
-    display: none;
+/* User dropdown styles */
+.user-dropdown {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     position: absolute;
     top: 100%;
     right: 0;
-    background-color: white;
-    border-radius: 4px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    margin-top: 8px;
-    min-width: 150px;
-}
-
-.profile-menu.active {
-    display: block;
-}
-
-.profile-menu a {
-    display: block;
-    padding: 10px 15px;
-    color: #333;
-    text-decoration: none;
-    transition: background-color 0.3s;
-}
-
-.profile-menu a:hover {
-    background-color: #f5f5f5;
+    width: 200px;
+    margin-top: 0.5rem;
+    z-index: 1001;
 }
 
 /* Navigation Menu */
@@ -103,6 +173,38 @@ body {
 
 .nav-link.active {
     background-color: rgba(255, 255, 255, 0.2);
+}
+
+.logo {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.nav-link {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.btn-login, .btn-signup {
+    color: #ffffff;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.btn-login:hover, .btn-signup:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Collections Page */
@@ -648,7 +750,7 @@ body {
     width: 32px;
     height: 32px;
     border-radius: 6px;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(137, 137, 137,.6);
     border: none;
     color: white;
     cursor: pointer;
@@ -742,23 +844,6 @@ body {
     height: auto;
     display: block;
     border-radius: 12px;
-}
-
-/* Topbar Styles */
-.topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 2rem;
-    background: #fff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.logo a {
-    color: #333;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 1.2rem;
 }
 
 /* Profile Section */
@@ -982,4 +1067,33 @@ body {
     background: white;
     color: #333;
     border: 1px solid #ddd;
+}
+
+.error {
+    color: #ff4d4d;
+    margin: 1rem 0;
+}
+
+.style-section {
+    margin: 2rem 0;
+}
+
+.style-section h3 {
+    color: #fff;
+    margin-bottom: 1rem;
+}
+
+#result {
+    margin-top: 2rem;
+}
+
+#result img {
+    max-width: 100%;
+    border-radius: 8px;
+}
+
+.actions {
+    margin-top: 1rem;
+    display: flex;
+    gap: 1rem;
 }

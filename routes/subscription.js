@@ -1,4 +1,5 @@
 import express from 'express';
+import User from '../models/User.js';
 import auth from '../middleware/auth.js';
 import subscriptionService from '../services/subscription.js';
 import plans from '../config/plans.js';

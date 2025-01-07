@@ -119,7 +119,8 @@ function createCollectionCard(collection) {
         const smallPlaceholder = document.createElement('div');
         smallPlaceholder.className = 'image-placeholder small-placeholder';
         if (i === 0) {
-            smallPlaceholder.innerHTML = '<div class="options-icon">⋮</div>';
+            const dropdown = this.createImageOptionsDropdown();
+            smallPlaceholder.appendChild(dropdown);
         }
         rightContainer.appendChild(smallPlaceholder);
     }
@@ -153,26 +154,41 @@ async function loadGenerations() {
         if (!response.ok) throw new Error('Failed to load generations');
         
         const generations = await response.json();
-        displayGenerations(generations);
+        const collections = await fetch('/api/collections').then(res => res.json());
+        displayGenerations(generations, collections);
     } catch (error) {
         console.error('Error loading generations:', error);
     }
 }
 
-function displayGenerations(generations) {
+function displayGenerations(generations, collections) {
     const grid = document.getElementById('generationsGrid');
     grid.innerHTML = '';
 
+    const collectionImageUrls = new Set();
+    collections.forEach(collection => {
+        if (collection.images) {
+            collection.images.forEach(image => collectionImageUrls.add(image.imageData));
+        }
+    });
+
+    const displayedImageUrls = new Set();
     generations.forEach(generation => {
-        const card = document.createElement('div');
-        card.className = 'generation-card';
-        
-        const img = document.createElement('img');
-        img.src = generation.imageData;
-        img.alt = generation.prompt || 'Generated sticker';
-        
-        card.appendChild(img);
-        grid.appendChild(card);
+        if (!collectionImageUrls.has(generation.imageData) && !displayedImageUrls.has(generation.imageData)) {
+            const card = document.createElement('div');
+            card.className = 'generation-card';
+            
+            const img = document.createElement('img');
+            img.src = generation.imageUrl;
+            img.alt = generation.prompt || 'Generated sticker';
+
+            const dropdown = this.createImageOptionsDropdown(generation);
+            
+            card.appendChild(img);
+            card.appendChild(dropdown);
+            grid.appendChild(card);
+            displayedImageUrls.add(generation.imageData);
+        }
     });
 }
 
@@ -181,3 +197,65 @@ document.querySelector('.new-collection')?.addEventListener('click', () => {
     // TODO: Implement collection creation modal
     console.log('Create new collection clicked');
 });
+
+    function createImageOptionsDropdown(generation) {
+        const dropdown = document.createElement('select');
+        dropdown.className = 'image-options-dropdown';
+        dropdown.innerHTML = `
+            <option value="prompt">Prompt</option>
+            <option value="add-to-collection">Add to Collection</option>
+            <option value="download">Download</option>
+            <option value="upscale">Upscale</option>
+            <option value="move-to-trash">Move to Trash</option>
+        `;
+        dropdown.addEventListener('change', (e) => {
+            const selectedOption = e.target.value;
+            switch (selectedOption) {
+                case 'prompt':
+                    this.handlePrompt(generation);
+                    break;
+                case 'add-to-collection':
+                    this.handleAddToCollection(generation);
+                    break;
+                case 'download':
+                    this.handleDownload(generation);
+                    break;
+                case 'upscale':
+                    this.handleUpscale(generation);
+                    break;
+                case 'move-to-trash':
+                    this.handleMoveToTrash(generation);
+                    break;
+            }
+        });
+        return dropdown;
+    };
+
+    // Placeholder functions for dropdown options
+    function handlePrompt(generation) {
+        console.log('Prompt selected', generation);
+        // Add your prompt handling logic here
+    };
+
+    function handleAddToCollection(generation) {
+        console.log('Add to Collection selected', generation);
+        // Add your Add to Collection handling logic here (likely involves opening the modal)
+        document.getElementById('newCollectionModal').classList.add('active');
+        loadCollections();
+        loadGenerations();
+    };
+
+    function handleDownload(generation) {
+        console.log('Download selected', generation);
+        // Add your download handling logic here
+    };
+
+    function handleUpscale(generation) {
+        console.log('Upscale selected', generation);
+        // Add your upscale handling logic here
+    };
+
+    function handleMoveToTrash(generation) {
+        console.log('Move to Trash selected', generation);
+        // Add your Move to Trash handling logic here
+    };

@@ -1,204 +1,148 @@
-export async function createTopbar(container = document.body) {
-    // Fetch user data first
-    const response = await fetch('/api/auth/user', {
-        credentials: 'include'
-    });
-    const user = await response.json();
-
+export async function createTopbar() {
     const topbar = document.createElement('div');
     topbar.className = 'topbar';
-    topbar.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        background: #1a1a1a;
-        padding: 1rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        z-index: 1000;
-        border-bottom: 1px solid #333;
-    `;
 
+    const content = document.createElement('div');
+    content.className = 'topbar-content';
+
+    // Left section with logo
     const leftSection = document.createElement('div');
-    leftSection.style.cssText = `
-        display: flex;
-        align-items: center;
-        gap: 2rem;
-    `;
-
+    leftSection.className = 'topbar-left';
+    
     const logo = document.createElement('a');
     logo.href = '/';
     logo.className = 'logo';
     logo.textContent = 'Sticker Generator';
-    logo.style.cssText = `
-        color: #fff;
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 1.2rem;
-    `;
+    
+    leftSection.appendChild(logo);
 
-    const nav = document.createElement('nav');
-    nav.className = 'nav-links';
-    nav.style.cssText = `
-        display: flex;
-        gap: 1.5rem;
-    `;
+    // Center section with navigation
+    const centerSection = document.createElement('div');
+    centerSection.className = 'topbar-center';
 
-    const links = [
+    const navItems = [
         { text: 'Generator', href: '/' },
         { text: 'Collections', href: '/collections' }
     ];
 
-    links.forEach(link => {
-        const a = document.createElement('a');
-        a.href = link.href;
-        a.textContent = link.text;
-        a.style.cssText = `
-            color: #fff;
-            text-decoration: none;
-            opacity: 0.8;
-            transition: opacity 0.2s;
-        `;
-        if (window.location.pathname === link.href) {
-            a.style.opacity = '1';
+    navItems.forEach(item => {
+        const link = document.createElement('a');
+        link.href = item.href;
+        link.className = 'nav-link';
+        if (window.location.pathname === item.href) {
+            link.classList.add('active');
         }
-        a.onmouseenter = () => a.style.opacity = '1';
-        a.onmouseleave = () => {
-            if (window.location.pathname !== link.href) {
-                a.style.opacity = '0.8';
-            }
-        };
-        nav.appendChild(a);
+        link.textContent = item.text;
+        centerSection.appendChild(link);
     });
 
-    leftSection.appendChild(logo);
-    leftSection.appendChild(nav);
+    // Right section with user info
+    const rightSection = document.createElement('div');
+    rightSection.className = 'topbar-right';
 
-    // Create profile section
-    const profileSection = document.createElement('div');
-    profileSection.className = 'profile-section';
-    profileSection.style.cssText = `
-        position: relative;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    `;
-
-    const profileButton = document.createElement('button');
-    profileButton.className = 'profile-button';
-    profileButton.style.cssText = `
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: #4CAF50;
-        border: none;
-        color: white;
-        font-weight: 600;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background-color 0.2s;
-    `;
-    profileButton.textContent = getInitials(user.name);
-
-    const dropdown = document.createElement('div');
-    dropdown.className = 'profile-dropdown';
-    dropdown.style.cssText = `
-        position: absolute;
-        top: 100%;
-        right: 0;
-        margin-top: 0.5rem;
-        background: #2a2a2a;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        min-width: 200px;
-        display: none;
-        z-index: 1000;
-    `;
-
-    const dropdownContent = `
-        <div style="padding: 1rem; border-bottom: 1px solid #444;">
-            <div style="font-weight: 600; color: #fff;">${user.name}</div>
-            <div style="color: #888; font-size: 0.9rem;">${user.email}</div>
-        </div>
-        <div style="padding: 0.5rem;">
-            <a href="/profile" class="dropdown-item">Personal Info</a>
-            <a href="/profile?tab=subscription" class="dropdown-item">Subscription</a>
-            <a href="/profile?tab=credits" class="dropdown-item">Credits</a>
-            <div class="dropdown-divider"></div>
-            <a href="#" class="dropdown-item" id="signOutButton">Sign Out</a>
-        </div>
-    `;
-    dropdown.innerHTML = dropdownContent;
-
-    // Add styles for dropdown items
-    const style = document.createElement('style');
-    style.textContent = `
-        .dropdown-item {
-            display: block;
-            padding: 0.5rem 1rem;
-            color: #fff;
-            text-decoration: none;
-            transition: background-color 0.2s;
-        }
-        .dropdown-item:hover {
-            background-color: #444;
-        }
-        .dropdown-divider {
-            height: 1px;
-            background-color: #444;
-            margin: 0.5rem 0;
-        }
-    `;
-    document.head.appendChild(style);
-
-    // Toggle dropdown
-    profileButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
-    });
-
-    // Close dropdown when clicking outside
-    document.addEventListener('click', () => {
-        dropdown.style.display = 'none';
-    });
-
-    // Handle sign out
-    dropdown.querySelector('#signOutButton').addEventListener('click', async (e) => {
-        e.preventDefault();
-        await fetch('/api/auth/logout', { 
-            method: 'POST',
+    try {
+        const response = await fetch('/api/auth/me', {
             credentials: 'include'
         });
-        window.location.href = '/login';
-    });
 
-    profileSection.appendChild(profileButton);
-    profileSection.appendChild(dropdown);
+        const userData = await response.json();
 
-    topbar.appendChild(leftSection);
-    topbar.appendChild(profileSection);
+        if (userData) {
+            // Credits indicator
+            const creditsIndicator = document.createElement('div');
+            creditsIndicator.className = 'credits-indicator';
 
-    // Add margin to body to account for fixed topbar
-    document.body.style.marginTop = '64px';
-    
-    // If a container is provided, insert at beginning
-    if (container === document.body) {
-        container.insertBefore(topbar, container.firstChild);
-    } else {
-        container.appendChild(topbar);
+            const creditsIcon = document.createElement('i');
+            creditsIcon.className = 'fas fa-coins';
+
+            const creditsCount = document.createElement('span');
+            creditsCount.textContent = userData.credits || '0';
+            creditsCount.id = 'topbarCredits';
+
+            creditsIndicator.appendChild(creditsIcon);
+            creditsIndicator.appendChild(creditsCount);
+
+            // Upgrade button
+            const upgradeButton = document.createElement('button');
+            upgradeButton.className = 'btn-upgrade';
+            upgradeButton.textContent = 'Upgrade';
+            upgradeButton.addEventListener('click', () => {
+                window.location.href = '/profile?tab=subscription';
+            });
+
+            // User menu button
+            const userButton = document.createElement('button');
+            userButton.className = 'user-menu-button';
+
+            const avatar = document.createElement('div');
+            avatar.className = 'user-avatar';
+            avatar.textContent = userData.name ? userData.name[0].toUpperCase() : 'U';
+
+            userButton.appendChild(avatar);
+
+            // Add elements to right section
+            rightSection.appendChild(creditsIndicator);
+            rightSection.appendChild(upgradeButton);
+            rightSection.appendChild(userButton);
+
+            // User dropdown (simplified for now)
+            const dropdown = document.createElement('div');
+            dropdown.className = 'user-dropdown';
+            dropdown.style.display = 'none';
+            dropdown.style.position = 'absolute';
+            dropdown.style.top = '100%';
+            dropdown.style.right = '0';
+            dropdown.style.backgroundColor = '#ffffff';
+            dropdown.style.borderRadius = '8px';
+            dropdown.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+            dropdown.style.width = '200px';
+            dropdown.style.marginTop = '0.5rem';
+
+            // Toggle dropdown
+            userButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+            });
+
+            document.addEventListener('click', () => {
+                dropdown.style.display = 'none';
+            });
+
+            rightSection.appendChild(dropdown);
+        } else {
+            const loginButton = document.createElement('a');
+            loginButton.href = '/login';
+            loginButton.textContent = 'Login';
+            loginButton.style.color = '#ffffff';
+            loginButton.style.textDecoration = 'none';
+            rightSection.appendChild(loginButton);
+        }
+
+        // Listen for credit updates
+        window.addEventListener('creditsUpdated', (event) => {
+            if (event.detail && typeof event.detail.credits === 'number') {
+                const creditsElement = document.getElementById('topbarCredits');
+                if (creditsElement) {
+                    creditsElement.textContent = event.detail.credits;
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Error loading user data:', error);
+    }
+
+    // Assemble the topbar
+    content.appendChild(leftSection);
+    content.appendChild(centerSection);
+    content.appendChild(rightSection);
+    topbar.appendChild(content);
+
+    // Insert into DOM
+    const topbarElement = document.getElementById('topbar');
+    if (topbarElement) {
+        topbarElement.replaceChildren(topbar);
     }
 
     return topbar;
-}
-
-function getInitials(name) {
-    return name
-        .split(' ')
-        .map(word => word[0])
-        .join('')
-        .toUpperCase();
 }

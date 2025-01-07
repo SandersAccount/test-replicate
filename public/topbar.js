@@ -6,7 +6,11 @@ class Topbar extends HTMLElement {
 
     async connectedCallback() {
         const response = await fetch('/api/auth/user');
-        const userData = await response.json();
+        if (!response.ok) {
+            window.location.href = '/login';
+             return;
+        }
+         const userData = await response.json();
         
         this.innerHTML = `
             <div class="topbar">

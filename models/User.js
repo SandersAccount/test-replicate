@@ -1,5 +1,51 @@
-import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import mongoose from '../config/database.js';
+
+const creditRequestSchema = new mongoose.Schema({
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    credits: {
+        type: Number,
+        required: true
+    },
+    status: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'],
+        default: 'pending'
+    },
+    requestedAt: {
+        type: Date,
+        default: Date.now
+    },
+    approvedAt: Date,
+    approvedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }
+});
+
+const creditHistorySchema = new mongoose.Schema({
+    type: {
+        type: String,
+        enum: ['add', 'use'],
+        required: true
+    },
+    amount: {
+        type: Number,
+        required: true
+    },
+    details: {
+        type: String,
+        required: true
+    },
+    timestamp: {
+        type: Date,
+        default: Date.now
+    }
+});
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -26,65 +72,49 @@ const userSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
+    credits: {
+        type: Number,
+        default: 100,  // Initial credits for new users
+        min: 0  // Prevent negative credits
+    },
+    creditHistory: [creditHistorySchema],
+    creditRequests: [creditRequestSchema],
     subscription: {
         plan: {
             type: String,
-            enum: ['free', 'basic', 'pro'],
+            enum: ['free', 'pro', 'enterprise'],
             default: 'free'
         },
-        startDate: Date,
-        endDate: Date,
         status: {
             type: String,
-            enum: ['active', 'expired', 'cancelled'],
+            enum: ['active', 'inactive', 'cancelled'],
             default: 'active'
-        }
-    },
-    credits: {
-        balance: {
-            type: Number,
-            default: 0
         },
-        history: [{
-            amount: Number,
-            type: {
-                type: String,
-                enum: ['purchase', 'usage', 'bonus'],
-            },
-            description: String,
-            date: {
-                type: Date,
-                default: Date.now
-            }
-        }]
+        startDate: Date,
+        endDate: Date
     },
-    collections: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Collection'
-    }],
-    generations: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Generation'
-    }],
-    isAdmin: {
-        type: Boolean,
-        default: false
+    role: {
+        type: String,
+        enum: ['user', 'admin'],
+        default: 'user'
     },
     createdAt: {
         type: Date,
         default: Date.now
-    },
-    lastLogin: {
-        type: Date
     }
 });
 
 // Hash password before saving
 userSchema.pre('save', async function(next) {
-    if (this.isModified('password')) {
-        this.password = await bcrypt.hash(this.password, 8);
+    if (!this.isModified('password')) return next();
+    
+    try {
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+        next();
+    } catch (error) {
+        next(error);
     }
-    next();
 });
 
 // Method to compare password
@@ -92,5 +122,12 @@ userSchema.methods.comparePassword = async function(password) {
     return bcrypt.compare(password, this.password);
 };
 
-const User = mongoose.model('User', userSchema);
+// Create the model if it hasn't been created yet
+let User;
+try {
+    User = mongoose.model('User');
+} catch (error) {
+    User = mongoose.model('User', userSchema);
+}
+
 export default User;

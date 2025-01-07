@@ -3,10 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Sticker Generator</title>
+    <title>AI Image Generator</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="/styles.css">
     <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: #111;
+            color: #fff;
+        }
+
         .container {
             max-width: 800px;
             margin: 2rem auto;
@@ -14,7 +23,7 @@
         }
         
         .generator-form {
-            margin-bottom: 1rem;
+            margin-bottom: 2rem;
         }
         
         .form-group {
@@ -25,119 +34,283 @@
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
+            color: #fff;
         }
         
         textarea {
             width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            padding: 0.75rem;
+            border: 1px solid #333;
+            border-radius: 8px;
             min-height: 100px;
             font-family: inherit;
+            background: #1a1a1a;
+            color: #fff;
+            resize: vertical;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #4CAF50;
         }
         
         button {
+            width: 100%;
             background-color: #4CAF50;
             color: white;
-            padding: 0.5rem 1rem;
+            padding: 0.75rem 1.5rem;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            margin-top: 1rem;
         }
         
         button:hover {
             background-color: #45a049;
         }
+
+        button:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
         
         .result {
             margin-top: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-        
-        .result img {
-            max-width: 100%;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+
+        .generation-container {
+            position: relative;
+            width: 400px;
+            margin: 0 auto;
         }
-        
-        .error {
-            color: #ff0000;
-            margin-top: 1rem;
+
+        .generation-image {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
         
         .loading {
             margin: 1rem 0;
+            color: #999;
+        }
+
+        h1 {
+            margin: 0 0 2rem;
+            font-weight: 600;
+        }
+        
+        .style-section {
+            margin-bottom: 2rem;
+            padding: 0;
+        }
+        
+        .style-section h3 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+        }
+        
+        .generate-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        
+        .generate-button:hover {
+            background-color: #45a049;
+        }
+        
+        .generate-button:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
+        
+        .actions {
+            margin-top: 1rem;
+        }
+        
+        .action-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        
+        .action-button:hover {
+            background-color: #45a049;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+        }
+        
+        .generations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .recent-generations {
+            margin-top: 3rem;
+        }
+
+        .recent-generations h2 {
+            color: #fff;
+            margin-bottom: 1rem;
         }
     </style>
 </head>
 <body>
+    <div id="topbar"></div>
+    
     <div class="container">
         <h1>AI Image Generator</h1>
         
-        <div class="generator-form">
-            <div class="form-group">
-                <label for="prompt">Enter your prompt:</label>
-                <textarea id="prompt" rows="4"></textarea>
-            </div>
-            
-            <button id="generate" class="btn-primary">Generate Image</button>
+        <textarea id="prompt" placeholder="Enter your prompt..."></textarea>
+        
+        <div class="style-section">
+            <h3>Choose a Style</h3>
+            <style-selector></style-selector>
         </div>
 
-        <div id="result" class="result"></div>
+        <button id="generate" class="generate-button">
+            <i class="fas fa-magic"></i>
+            Generate Image
+        </button>
+
+        <div id="result"></div>
     </div>
+
+    <collection-modal></collection-modal>
 
     <script type="module">
         import { createTopbar } from '/js/components/Topbar.js';
-        import { createGenerationCard } from '/js/components/GenerationCard.js';
+        import '/js/components/StyleSelector.js';
+        import '/js/components/Toast.js';
+        import { GenerationCard } from '/js/components/GenerationCard.js';
+        import '/js/components/CollectionModal.js';
 
-        async function initializePage() {
-            try {
-                await createTopbar();
+        // Initialize topbar
+        const topbarEl = document.getElementById('topbar');
+        createTopbar(topbarEl);
 
-                document.getElementById('generate').addEventListener('click', async () => {
-                    const prompt = document.getElementById('prompt').value;
-                    const resultDiv = document.getElementById('result');
-                    const generateBtn = document.getElementById('generate');
-                    
-                    if (!prompt) {
-                        alert('Please enter a prompt');
-                        return;
-                    }
-                    
-                    generateBtn.disabled = true;
-                    generateBtn.textContent = 'Generating...';
-                    resultDiv.innerHTML = '<div class="loading">Generating your sticker...</div>';
-                    
-                    try {
-                        const response = await fetch('/generate', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ prompt })
-                        });
-                        
-                        if (!response.ok) {
-                            throw new Error('Generation failed');
-                        }
-                        
-                        const data = await response.json();
-                        resultDiv.innerHTML = '';
-                        resultDiv.appendChild(createGenerationCard(data));
-                        
-                    } catch (error) {
-                        resultDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
-                    } finally {
-                        generateBtn.disabled = false;
-                        generateBtn.textContent = 'Generate Image';
-                    }
-                });
-            } catch (error) {
-                console.error('Error initializing page:', error);
+        // Initialize components
+        const generateButton = document.getElementById('generate');
+        const promptInput = document.getElementById('prompt');
+        const resultDiv = document.getElementById('result');
+        const styleSelector = document.querySelector('style-selector');
+        const collectionModal = document.querySelector('collection-modal');
+
+        // Function to show toast messages
+        function showToast(message, type = 'info') {
+            const toast = document.querySelector('toast-notification') || document.createElement('toast-notification');
+            if (!toast.parentElement) {
+                document.body.appendChild(toast);
             }
+            toast.show(message, type);
         }
 
-        initializePage();
+        // Initialize create collection functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            const createCollectionSquare = document.querySelector('.create-collection-square');
+            if (createCollectionSquare) {
+                createCollectionSquare.addEventListener('click', () => {
+                    collectionModal.showNewCollectionDialog();
+                });
+            }
+        });
+
+        // Handle image generation
+        generateButton.addEventListener('click', async () => {
+            const prompt = promptInput.value.trim();
+            const stylePrompt = styleSelector.selectedStyle?.prompt || '';
+
+            if (!prompt) {
+                showToast('Please enter a prompt', 'error');
+                return;
+            }
+
+            generateButton.disabled = true;
+            generateButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            resultDiv.innerHTML = '<div class="loading">Generating your image...</div>';
+
+            try {
+                const fullPrompt = stylePrompt ? `${prompt}. ${stylePrompt}` : prompt;
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        prompt: fullPrompt
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    if (response.status === 403) {
+                        showToast('Not enough credits to generate image', 'error');
+                    } else {
+                        throw new Error(error.error || 'Failed to generate image');
+                    }
+                    return;
+                }
+
+                const data = await response.json();
+                
+                // Create generation card for result
+                const card = document.createElement('generation-card');
+                card.setAttribute('image-url', data.generation.imageUrl);
+                card.setAttribute('prompt', data.generation.prompt);
+                
+                resultDiv.innerHTML = '';
+                resultDiv.appendChild(card);
+                
+                // Update credits display
+                const topbarCredits = document.getElementById('topbarCredits');
+                const subscriptionCredits = document.getElementById('subscriptionCredits');
+                if (topbarCredits) topbarCredits.textContent = data.credits;
+                if (subscriptionCredits) subscriptionCredits.textContent = data.credits;
+                
+                showToast('Image generated successfully!', 'success');
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Failed to generate image. Please try again.', 'error');
+                resultDiv.innerHTML = '';
+            } finally {
+                generateButton.disabled = false;
+                generateButton.innerHTML = '<i class="fas fa-magic"></i> Generate Image';
+            }
+        });
+
+        // 
+        promptInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                generateButton.click();
+            }
+        });
     </script>
 </body>
 </html>
